@@ -1,0 +1,582 @@
+/* styles.css - CSS Global para Streamlit */
+
+/* ============================================
+   VARIABLES GLOBALES (LIGHT MODE - POR DEFECTO)
+   ============================================ */
+:root {
+	--primary-color: #0f172a; /* Sidebar y Encabezados de Tabla */
+	--secondary-color: #1e293b; /* Fondo de Input en Sidebar */
+	--accent-color: #3b82f6; /* Azul brillante (Botones, Tabs activas, Borders) */
+	--background-color: #f6f8fa; /* Fondo principal de la App */
+	--text-color: #1f2937; /* Color de texto oscuro */
+	--border-color: #e5e7eb;
+	--sidebar-text: #ffffff; /* Texto de sidebar blanco */
+
+	/* Variables para superficies blancas (Metrics, Expander, Input Main) */
+	--surface-bg: #d0d0d0;
+	--surface-hover: #d3d3d3;
+	--table-stripe: #f9fafb;
+}
+
+/* ============================================
+   FONDO PRINCIPAL
+   ============================================ */
+
+.stMainBlockContainer {
+	background-color: var(--background-color);
+	max-width: 1000px;
+}
+.stApp {
+	color: var(--text-color); /* Asegura que el texto principal sea oscuro */
+}
+
+/* ============================================
+   SIDEBAR - ESTILOS CONSISTENTES
+   ============================================ */
+
+/* Fondo del sidebar */
+[data-testid='stSidebar'] {
+	background-color: var(--primary-color) !important;
+}
+
+/* Contenido del sidebar */
+[data-testid='stSidebar'] > div:first-child {
+	background-color: var(--primary-color) !important;
+}
+
+/* Todos los textos en el sidebar */
+[data-testid='stSidebar'] .stMarkdown,
+[data-testid='stSidebar'] p,
+[data-testid='stSidebar'] h1,
+[data-testid='stSidebar'] h2,
+[data-testid='stSidebar'] h3,
+[data-testid='stSidebar'] label,
+[data-testid='stSidebar'] span {
+	color: var(--sidebar-text) !important;
+}
+
+/* Labels de widgets (selectbox, slider, radio) */
+[data-testid='stSelectbox'] {
+	background-color: #51cd54 !important;
+	padding: 10px;
+}
+[data-testid='stSidebar'] [data-testid='stWidgetLabel'],
+[data-testid='stSidebar'] .stSelectbox label {
+	color: var(--primary-color) !important;
+	padding-left: 8px;
+}
+svg.st-bt.st-co.st-b6.st-cp.st-cq {
+	fill: #51cd54 !important;
+}
+/* [data-testid='stSidebar'] [data-testid='stWidgetLabel'], */
+/* [data-testid='stSidebar'] .stSelectbox label, */
+[data-testid='stSidebar'] .stSlider label,
+[data-testid='stSidebar'] .stRadio label,
+[data-testid='stSidebar'] .stCheckbox label {
+	color: var(--sidebar-text) !important;
+	font-weight: 500;
+}
+
+/* Opciones de radio buttons */
+[data-testid='stSidebar'] .stRadio > label > div {
+	color: var(--sidebar-text) !important;
+}
+
+/* Separadores en el sidebar */
+[data-testid='stSidebar'] hr {
+	border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Links en el sidebar */
+[data-testid='stSidebar'] a {
+	color: #60a5fa !important;
+}
+
+[data-testid='stSidebar'] a:hover {
+	color: #93c5fd !important;
+}
+
+/* ============================================
+   TÍTULOS
+   ============================================ */
+h1,
+h2,
+h3 {
+	color: var(--text-color);
+	font-weight: 600;
+}
+
+h1 {
+	font-size: 2.5rem;
+	margin-bottom: 1rem;
+}
+
+h2 {
+	font-size: 2rem;
+	margin-top: 1.5rem;
+	margin-bottom: 0.8rem;
+}
+
+h3 {
+	font-size: 1.5rem;
+	margin-top: 1rem;
+	margin-bottom: 0.5rem;
+}
+
+/* ============================================
+   BOTONES
+   ============================================ */
+.stButton > button {
+	background-color: var(--accent-color);
+	color: white;
+	border-radius: 8px;
+	border: none;
+	padding: 0.5rem 1.5rem;
+	font-weight: 500;
+	transition: all 0.3s ease;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.stButton > button:hover {
+	background-color: #2563eb;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+	transform: translateY(-2px);
+}
+
+.stButton > button:active {
+	transform: translateY(0);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================
+   INPUTS Y SELECTORES
+   ============================================ */
+/* Style the filled portion of the slider track */
+.stSlider {
+	padding: 10px !important;
+}
+.stSlider > .st-cw {
+	background: linear-gradient(
+		to right,
+		rgb(6, 146, 69) 0%,
+		#51cd54 44.4444%,
+		rgba(151, 166, 195, 0.25) 44.4444%,
+		rgba(151, 166, 195, 0.25) 100%
+	);
+}
+div[role='slider'] {
+	background-color: rgb(6, 146, 69) !important;
+}
+[data-testid='stSliderThumbValue'] {
+	color: #105943 !important;
+}
+.stSelectbox,
+.stSlider,
+.stTextInput {
+	background: var(--surface-bg);
+	border-radius: 8px;
+	color: var(--text-color); /* Texto en inputs del Main Block */
+}
+
+/* Sidebar inputs (fondo oscuro) */
+[data-testid='stSidebar'] .stSelectbox > div > div,
+[data-testid='stSidebar'] .stTextInput > div > div {
+	background-color: var(--secondary-color) !important;
+	color: white !important;
+}
+
+/* ============================================
+   DATAFRAMES Y TABLAS
+   ============================================ */
+.stDataFrame {
+	border-radius: 8px;
+	overflow: hidden;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Header de las tablas */
+.stDataFrame thead tr th {
+	background-color: var(--primary-color) !important;
+	color: white !important;
+	font-weight: 600;
+	padding: 12px !important;
+}
+
+/* Filas de tablas */
+.stDataFrame tbody tr:nth-child(even) {
+	background-color: var(--table-stripe); /* #f9fafb */
+}
+.stDataFrame tbody tr:nth-child(odd) {
+	background-color: var(--surface-bg); /* white */
+}
+
+.stDataFrame tbody tr:hover {
+	background-color: var(--surface-hover); /* #f3f4f6 */
+}
+/* Asegura que el texto en la tabla use el color principal */
+.stDataFrame td {
+	color: var(--text-color);
+}
+
+/* ============================================
+   MÉTRICAS
+   ============================================ */
+.stMetric {
+	background: var(--surface-bg);
+	padding: 1.2rem;
+	border-radius: 8px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.stMetric label {
+	font-size: 0.9rem;
+	color: #6b7280;
+	font-weight: 500;
+}
+
+.stMetric [data-testid='stMetricValue'] {
+	font-size: 1.8rem;
+	font-weight: 700;
+	color: var(--text-color);
+}
+
+/* ============================================
+   TABS
+   ============================================ */
+.stTabs [data-baseweb='tab-list'] {
+	gap: 1rem;
+	background-color: transparent;
+}
+
+.stTabs [data-baseweb='tab'] {
+	border-radius: 8px 8px 0 0;
+	padding: 0.75rem 1.5rem;
+	background-color: var(--surface-bg);
+	border: 1px solid var(--border-color);
+	font-weight: 500;
+	color: var(--text-color);
+}
+
+.stTabs [data-baseweb='tab']:hover {
+	background-color: var(--surface-hover);
+}
+
+.stTabs [aria-selected='true'] {
+	background-color: var(--accent-color) !important;
+	color: white !important;
+}
+
+/* ============================================
+   EXPANDERS
+   ============================================ */
+.streamlit-expanderHeader {
+	background-color: var(--surface-bg);
+	border-radius: 8px;
+	font-weight: 500;
+	border: 1px solid var(--border-color);
+	transition: all 0.3s ease;
+}
+
+.streamlit-expanderHeader:hover {
+	background-color: var(--surface-hover);
+	border-color: var(--accent-color);
+}
+
+[role='option']:hover {
+	background-color: var(--surface-hover);
+}
+
+/* ============================================
+   ALERTAS Y MENSAJES (Los colores son hardcodeados, se anularán en dark mode)
+   ============================================ */
+.stAlert {
+	border-radius: 8px;
+	border-left: 4px solid;
+	color: var(--text-color); /* Asegura que el texto sea el principal */
+}
+
+/* Success */
+[data-testid='stAlert'][kind='success'] {
+	background-color: #d1fae5;
+	border-left-color: #10b981;
+}
+
+/* Warning */
+[data-testid='stAlert'][kind='warning'] {
+	background-color: #fef3c7;
+	border-left-color: #f59e0b;
+}
+
+/* Error */
+[data-testid='stAlert'][kind='error'] {
+	background-color: #fee2e2;
+	border-left-color: #ef4444;
+}
+
+/* Info */
+[data-testid='stAlert'][kind='info'] {
+	background-color: #dbeafe;
+	border-left-color: var(--accent-color);
+}
+
+/* ============================================
+   COMPONENTES PERSONALIZADOS (Asegura fondos claros)
+   ============================================ */
+
+/* Hero section (generalmente se mantiene el gradiente) */
+.hero-section {
+	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	color: white;
+	padding: 3rem 2rem;
+	border-radius: 12px;
+	text-align: center;
+	margin-bottom: 2rem;
+	box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.hero-section h1 {
+	color: white !important;
+	margin-bottom: 0.5rem;
+}
+
+.hero-section h3 {
+	color: rgba(255, 255, 255, 0.9) !important;
+	font-weight: 400;
+}
+
+/* Feature cards */
+.feature-card {
+	background: var(--surface-bg);
+	border-radius: 12px;
+	padding: 2rem;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+	text-align: center;
+	transition: transform 0.3s ease, box-shadow 0.3s ease;
+	height: 100%;
+}
+
+.feature-card:hover {
+	transform: translateY(-8px);
+	box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+}
+
+.feature-card h3 {
+	color: var(--primary-color);
+	margin-bottom: 0.5rem;
+}
+
+/* Player card */
+.player-card {
+	background: var(--surface-bg);
+	border-radius: 12px;
+	padding: 1.5rem;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	margin-bottom: 1rem;
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+.footer {
+	text-align: center;
+	padding: 2rem;
+	color: #6b7280;
+	border-top: 1px solid var(--border-color);
+	margin-top: 3rem;
+	font-size: 0.9rem;
+}
+
+/* ============================================
+   Image
+   ============================================ */
+[data-testid='stImageContainer'] img {
+	border-radius: 0px;
+}
+/* ============================================
+   RESPONSIVE Y SCROLLBAR
+   ============================================ */
+
+@media (max-width: 768px) {
+	.hero-section {
+		padding: 2rem 1rem;
+	}
+
+	.feature-card {
+		padding: 1.5rem;
+	}
+
+	h1 {
+		font-size: 2rem;
+	}
+
+	h2 {
+		font-size: 1.5rem;
+	}
+}
+
+::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+}
+
+::-webkit-scrollbar-track {
+	background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+	background: #888;
+	border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: #555;
+}
+
+/* ============================================
+   DARK MODE OVERRIDES - @media (prefers-color-scheme: dark)
+   ============================================ */
+@media (prefers-color-scheme: dark) {
+	/* --- VARIABLES GLOBALES DARK MODE --- */
+	:root {
+		--primary-color: #1a202c; /* Sidebar y Encabezados de Tabla (Gris muy oscuro) */
+		--secondary-color: #2d3748; /* Fondo de Input en Sidebar/Secundario Dark */
+		--accent-color: #63b3ed; /* Azul claro para acento */
+		--background-color: #121212; /* Fondo principal de la App (Negro casi puro) */
+		--text-color: #e2e8f0; /* Texto principal claro */
+		--border-color: #4a5568; /* Borde gris oscuro */
+		--sidebar-text: #e2e8f0; /* Texto de sidebar claro */
+
+		/* Superficies que eran blancas: ahora un gris oscuro */
+		--surface-bg: #1f2937;
+		--surface-hover: #2d3748;
+		--table-stripe: #1a202c; /* Franja par para tablas */
+	}
+
+	/* ============================================
+       SIDEBAR
+       ============================================ */
+	/* Links en el sidebar (ajustar para mayor contraste) */
+	[data-testid='stSidebar'] a {
+		color: var(--accent-color) !important;
+	}
+
+	[data-testid='stSidebar'] a:hover {
+		color: #90cdf4 !important;
+	}
+
+	/* ============================================
+       INPUTS Y SELECTORES
+       ============================================ */
+	.stSlider,
+	.stSelectbox {
+		padding: 10px !important;
+	}
+	/* Inputs en Main Block (fondo oscuro, texto claro) */
+	.stSelectbox,
+	.stSlider,
+	.stTextInput {
+		background: var(--surface-bg);
+	}
+	.stSlider span {
+		color: var(--text-color);
+	}
+
+	/* El texto de los inputs en el main block debe ser claro */
+	.stSelectbox > div > div,
+	.stTextInput > div > div {
+		background-color: var(--surface-bg) !important;
+		color: var(--text-color) !important;
+	}
+	/* ============================================
+       MÉTRICAS, TABS, EXPANDERS (ya usan var(--surface-bg))
+       ============================================ */
+	.stMetric {
+		box-shadow: 0 1px 3px rgba(255, 255, 255, 0.1); /* Sombra clara */
+	}
+
+	/* Asegurar color de etiqueta de métrica */
+	.stMetric label {
+		color: #a0aec0;
+	}
+
+	/* Tabs no seleccionadas */
+	.stTabs [data-baseweb='tab']:hover {
+		background-color: var(--surface-hover);
+	}
+
+	/* ============================================
+       DATAFRAMES Y TABLAS
+       ============================================ */
+	.stDataFrame {
+		box-shadow: 0 1px 3px rgba(255, 255, 255, 0.1);
+	}
+
+	.stDataFrame tbody tr:hover {
+		background-color: var(--surface-hover) !important;
+	}
+
+	/* ============================================
+       ALERTAS Y MENSAJES (Invertir colores)
+       ============================================ */
+	[data-testid='stAlert'][kind='info'] {
+		background-color: #1e4e7c;
+		border-left-color: var(--accent-color);
+	}
+
+	[data-testid='stAlert'][kind='warning'] {
+		background-color: #7d5207;
+		border-left-color: #f59e0b;
+	}
+
+	[data-testid='stAlert'][kind='error'] {
+		background-color: #8c2a2a;
+		border-left-color: #ef4444;
+	}
+
+	[data-testid='stAlert'][kind='success'] {
+		background-color: #105943;
+		border-left-color: #10b981;
+	}
+
+	/* Asegura que el texto dentro de las alertas sea claro */
+	.stAlert .stMarkdown p {
+		color: var(--text-color) !important;
+	}
+
+	/* ============================================
+       COMPONENTES PERSONALIZADOS
+       ============================================ */
+
+	/* Player card y Feature card */
+	.player-card,
+	.feature-card {
+		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+	}
+
+	.feature-card h3 {
+		color: var(--text-color);
+	}
+
+	.feature-card:hover {
+		box-shadow: 0 12px 20px rgba(0, 0, 0, 0.5);
+	}
+
+	/* FOOTER */
+	.footer {
+		color: #a0aec0;
+		border-top: 1px solid var(--border-color);
+	}
+
+	/* SCROLLBAR */
+	::-webkit-scrollbar-track {
+		background: #2d3748;
+	}
+
+	::-webkit-scrollbar-thumb {
+		background: #60a5fa;
+	}
+
+	::-webkit-scrollbar-thumb:hover {
+		background: #3b82f6;
+	}
+}
