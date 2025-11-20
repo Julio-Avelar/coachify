@@ -111,6 +111,6 @@ Esta es la página principal del sistema.
 # Footer
 st.markdown("""
 <div class="footer">
-    <p>Desarrollado con ❤️ usando Streamlit | © 2025 Coachify | Julio César Avelar Alvarado</p>
+    <p>Desarrollado con ❤️ usando Streamlit | © 2025 Coachify | Julio Avelar </p>
 </div>
 """, unsafe_allow_html=True)
