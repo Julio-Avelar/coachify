@@ -40,10 +40,11 @@ load_css_file("styles.css")
 initialize_session_state()
 
 # Introducción
+st.image("./logo_coach.jpeg", width=130)
 st.markdown("""
 ## Bienvenido
 
-**Gemelo Táctico** es una herramienta avanzada de análisis de jugadores de fútbol que utiliza 
+**Coachify** es una herramienta avanzada de análisis de jugadores de fútbol que utiliza 
 técnicas de machine learning para identificar similitudes entre jugadores y proporcionar 
 insights profundos sobre su rendimiento.
 
@@ -105,7 +106,7 @@ st.sidebar.markdown("""
 Esta es la página principal del sistema.
 
 **Para comenzar el análisis:**
-→ Ve a la página **⚽ Análisis**
+→ Ve a la página **Coachify Match** o **Face to Face** usando el menú.
 """)
 
 # Footer
