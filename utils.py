@@ -12,7 +12,7 @@ import base64
 warnings.filterwarnings('ignore')
 
 # 🚨 RUTA CRÍTICA: AJUSTA ESTA RUTA A TU DIRECTORIO EXACTO DONDE ESTÁN LOS CSVs 🚨
-base_path = r'C:/Users/elisa/Documents/Proyecto Julio/coachify/Data/' 
+base_path = r'Data/' 
 
 # --- CONSTANTES GLOBALES ---
 COLS_ABSOLUTAS_RAW = [
