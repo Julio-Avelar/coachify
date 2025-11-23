@@ -68,8 +68,6 @@
 svg.st-bt.st-co.st-b6.st-cp.st-cq {
 	fill: #51cd54 !important;
 }
-/* [data-testid='stSidebar'] [data-testid='stWidgetLabel'], */
-/* [data-testid='stSidebar'] .stSelectbox label, */
 [data-testid='stSidebar'] .stSlider label,
 [data-testid='stSidebar'] .stRadio label,
 [data-testid='stSidebar'] .stCheckbox label {

@@ -8,10 +8,11 @@ import warnings
 import os
 import io
 import base64
+import matplotlib.figure
 
 warnings.filterwarnings('ignore')
 
-# 🚨 RUTA CRÍTICA: AJUSTA ESTA RUTA A TU DIRECTORIO EXACTO DONDE ESTÁN LOS CSVs 🚨
+# 🚨 importante!  AJUSTA ESTA RUTA A TU DIRECTORIO EXACTO DONDE ESTÁN LOS CSVs 🚨
 base_path = r'Data/' 
 
 # --- CONSTANTES GLOBALES ---
@@ -107,7 +108,7 @@ def load_data_core():
 
     return df_referencia, matriz_features_modelos, mapa_id_indice, df_modelos_plot, df_stats_absolutas
 
-# Nueva función centralizada para el manejo del estado de sesión
+#  función para el manejo del estado de sesión
 def initialize_session_state():
     """Inicializa y carga todos los datos necesarios en st.session_state si no están presentes."""
     
@@ -156,11 +157,7 @@ def get_absolute_metrics_for(player_id, df_procesado):
     return df_out
 
 
-# --- FUNCIONES DE ANÁLISIS Y GRÁFICOS (RESTO DEL CÓDIGO) ---
-# ... (El resto de las funciones: obtener_jugadores_similares, crear_grafico_radar, 
-# strengths_and_weaknesses, recommend_position, make_html_report, draw_player_card, 
-# se mantienen sin cambios y se pegan aquí en utils.py) ...
-
+# --- FUNCIONES DE ANÁLISIS Y GRÁFICOS ---
 
 def obtener_jugadores_similares(player_id_objetivo, posicion, matriz_features_modelos, mapa_id_indice, df_modelos_plot, k=5):
     """Calcula la similitud de coseno y devuelve los K jugadores más similares."""
@@ -195,7 +192,7 @@ def crear_grafico_radar(player_ids, df_referencia, df_reporte, df_modelo_plot, n
     N = len(columnas_features)
     
     if N < 3:
-        # st.error(f"Error: El modelo de {nombre_modelo} solo tiene {N} features.") # Solo debe mostrarse en la UI
+        # st.error(f"Error: El modelo de {nombre_modelo} solo tiene {N} features.") 
         return plt.figure()
         
     angles = [n / float(N) * 2 * np.pi for n in range(N)]
@@ -205,7 +202,7 @@ def crear_grafico_radar(player_ids, df_referencia, df_reporte, df_modelo_plot, n
     ax.tick_params(
         axis='x', 
         pad=4, 
-        # labelsize=2 # <--- CAMBIA ESTE VALOR (e.g., a 12 para más grande, o 8 para más pequeño)
+        # labelsize=2 
     )
 
     ax.set_theta_offset(np.pi / 2)
@@ -225,7 +222,7 @@ def crear_grafico_radar(player_ids, df_referencia, df_reporte, df_modelo_plot, n
             vector = np.clip(vector_raw, -3, 3).tolist() 
             
         except (IndexError, KeyError):
-            # st.warning(f"⚠️ El jugador (ID: {player_id}) no se encuentra en el archivo de modelo '{nombre_modelo}'.")
+            st.warning(f"⚠️ El jugador (ID: {player_id}) no se encuentra en el archivo de modelo '{nombre_modelo}'.")
             continue
             
         vector += [vector[0]]
@@ -316,52 +313,265 @@ def recommend_position(player_id, df_modelo_plot, matriz_features_modelos):
     scores_sorted = sorted(scores, key=lambda x: x[1], reverse=True)
     return scores_sorted
 
-def make_html_report(player_id, player_row, df_stats_table, strengths, weaknesses, similares_df, radar_fig):
+def make_html_report_pro(player_id: int, 
+                         player_row: pd.Series, 
+                         df_stats_table: pd.DataFrame, 
+                         strengths: pd.DataFrame, 
+                         weaknesses: pd.DataFrame, 
+                         similares_df: pd.DataFrame, 
+                         radar_fig: matplotlib.figure.Figure) -> str:
     """
-    Genera un string HTML para el reporte descargable.
+    Generar string HTML para el reporte descargable
     """
+    
+    # 1. Convertir la figura del radar a Base64
+    # -------------------------------------------------------------------
     buf = io.BytesIO()
-    radar_fig.savefig(buf, format='png', dpi=150, bbox_inches='tight')
+    radar_fig.savefig(buf, format='png', dpi=300, bbox_inches='tight', facecolor='white')
     buf.seek(0)
     img_b64 = base64.b64encode(buf.read()).decode('utf-8')
     buf.close()
+    
+    # Obtener URL de la foto del jugador 
+    player_photo_url = player_row.get('player.photo', 'https://placehold.co/100x100/A0AEC0/ffffff?text=No+Photo')
 
-    df_stats_html = df_stats_table.to_html(index=False)
-    strengths_html = strengths.to_html(index=False).replace('<th>value</th>', '<th>Valor (Z-Score)</th>')
-    weaknesses_html = weaknesses.to_html(index=False).replace('<th>value</th>', '<th>Valor (Z-Score)</th>')
-    similares_html = similares_df.to_html(index=False)
+    # 2. Convertir DataFrames a HTML con estilos de tabla limpios
+    # -------------------------------------------------------------------
+    
+    # Clase CSS base para tablas
+    TABLE_CSS_CLASS = "styled-table"
+    
+    # Función auxiliar para aplicar estilos uniformes a las tablas
+    def style_dataframe(df, header_map=None):
+        if header_map:
+            df = df.rename(columns=header_map)
+            
+        # Aplica estilos básicos para hacerlo limpio y responsivo
+        styled_html = (df.style
+                       .set_table_attributes(f'class="{TABLE_CSS_CLASS}"')
+                       .set_table_styles([
+                           {'selector': 'th', 'props': [('background-color', '#4A90E2'), ('color', 'white'), ('font-size', '10px'), ('text-align', 'center')]},
+                           {'selector': 'td', 'props': [('font-size', '12px'), ('text-align', 'center')]}
+                       ])
+                       .hide(axis='index') # Oculta el índice de pandas
+                       .to_html())
+        return styled_html.replace('<th>value</th>', '<th>Valor (Z-Score)</th>') # Reemplazo específico para las tablas de Z-Score
+
+    # Generación de HTML para las tablas
+    df_stats_html = style_dataframe(df_stats_table)
+    strengths_html = style_dataframe(strengths, header_map={'feature': 'Fortaleza', 'value': 'Valor (Z-Score)'})
+    weaknesses_html = style_dataframe(weaknesses, header_map={'feature': 'Debilidad', 'value': 'Valor (Z-Score)'})
+    similares_html = style_dataframe(similares_df)
+
+    # 3. Estructura HTML y CSS
+    # -------------------------------------------------------------------
 
     html = f"""
-    <html>
-    <head><meta charset="utf-8"><title>Reporte - {player_row['player.lastname']}</title></head>
-    <body>
-    <h1>Reporte: {player_row.get('player.firstname','')} {player_row.get('player.lastname','')}</h1>
-    <h3>Equipo: {player_row.get('team.name','')} &nbsp; | &nbsp; Liga: {player_row.get('league.name','')}</h3>
-    <img src="data:image/png;base64,{img_b64}" width="600"/>
-    <h2>Métricas Absolutas</h2>
-    {df_stats_html}
-    <h2>Fortalezas (Z-Score > 0)</h2>
-    {strengths_html}
-    <h2>Debilidades (Z-Score < 0)</h2>
-    {weaknesses_html}
-    <h2>Jugadores Similares</h2>
-    {similares_html}
-    <hr>
-    <p>Generado por Gemelo Táctico.</p>
-    </body>
-    </html>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>Reporte Táctico - {player_row.get('player.lastname','')}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* Estilos Globales (simulando un diseño limpio y moderno) */
+        body {{
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f7f6;
+            color: #333;
+        }}
+        .report-container {{
+            max-width: 1200px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+        }}
+        
+        /* Cabecera del Reporte */
+        .header-section {{
+            display: flex;
+            align-items: center;
+            border-bottom: 3px solid #4A90E2;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }}
+        .player-info {{
+            margin-left: 20px;
+        }}
+        .player-name {{
+            font-size: 2.2em;
+            color: #1a1a1a;
+            margin: 0;
+        }}
+        .player-details {{
+            font-size: 1em;
+            color: #666;
+            margin-top: 5px;
+        }}
+        .player-details span {{
+            font-weight: bold;
+            color: #4A90E2;
+        }}
+        .player-photo {{
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #4A90E2;
+        }}
+
+        /* Estilos de las Tarjetas/Secciones */
+        .section-title {{
+            font-size: 1.5em;
+            color: #4A90E2;
+            border-left: 4px solid #1a1a1a;
+            padding-left: 10px;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }}
+        .content-grid {{
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }}
+        
+        /* Estilos de Tablas de Pandas (CSS de la clase 'styled-table') */
+        .styled-table {{
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 0.9em;
+            min-width: 400px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden; /* Para las esquinas redondeadas */
+        }}
+        .styled-table thead tr {{
+            background-color: #4A90E2;
+            color: #ffffff;
+            text-align: left;
+        }}
+        .styled-table th, .styled-table td {{
+            padding: 12px 15px;
+        }}
+        .styled-table tbody tr {{
+            border-bottom: 1px solid #dddddd;
+        }}
+        .styled-table tbody tr:nth-of-type(even) {{
+            background-color: #f3f3f3;
+        }}
+        .styled-table tbody tr:last-of-type {{
+            border-bottom: 2px solid #4A90E2;
+        }}
+        
+        /* Footer */
+        .footer {{
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            font-size: 0.9em;
+            color: #777;
+        }}
+
+        /* Media Query para móvil */
+        @media (max-width: 800px) {{
+            .content-grid {{
+                grid-template-columns: 1fr; /* Una sola columna en móvil */
+            }}
+            .report-container {{
+                padding: 10px;
+            }}
+            .header-section {{
+                flex-direction: column;
+                text-align: center;
+            }}
+            .player-info {{
+                margin-left: 0;
+                margin-top: 15px;
+            }}
+        }}
+    </style>
+</head>
+<body>
+    <div class="report-container">
+        
+        <!-- SECCIÓN DE CABECERA Y DATOS DEL JUGADOR -->
+        <div class="header-section">
+            <img src="{player_photo_url}" class="player-photo" onerror="this.onerror=null;this.src='https://placehold.co/100x100/A0AEC0/ffffff?text=N/A';" alt="Foto del Jugador"/>
+            <div class="player-info">
+                <h1 class="player-name">{player_row.get('player.firstname','')} {player_row.get('player.lastname','')}</h1>
+                <p class="player-details">
+                    <span>Equipo:</span> {player_row.get('team.name','N/A')} &nbsp; | &nbsp; 
+                    <span>Liga:</span> {player_row.get('league.name','N/A')} &nbsp; | &nbsp; 
+                    <span>Edad:</span> {player_row.get('player.age','N/A')}
+                </p>
+                <p class="player-details">
+                    <span>Altura:</span> {player_row.get('player.height','N/A')} &nbsp; | &nbsp; 
+                    <span>Peso:</span> {player_row.get('player.weight','N/A')} &nbsp; | &nbsp; 
+                    <span>Nacionalidad:</span> {player_row.get('player.nationality','N/A')}
+                </p>
+            </div>
+        </div>
+
+        <!-- SECCIÓN DE RENDIMIENTO Y ESTADÍSTICAS -->
+        <h2 class="section-title">Análisis Táctico (Rendimiento por Posición)</h2>
+        
+        <div class="content-grid">
+            <!-- Columna 1: Gráfico de Radar -->
+            <div class="radar-chart">
+                <p style="text-align: center; font-style: italic; color: #555;">Comparación de métricas clave vs. la media de jugadores de su posición.</p>
+                <img src="data:image/png;base64,{img_b64}" style="max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 8px;"/>
+            </div>
+            
+            <!-- Columna 2: Estadísticas Absolutas -->
+            <div class="absolute-stats">
+                <h3 style="color: #1a1a1a;">Métricas Básicas</h3>
+                {df_stats_html}
+            </div>
+        </div>
+
+        <!-- SECCIÓN DE FORTALEZAS Y DEBILIDADES -->
+        <h2 class="section-title">Análisis de Z-Scores (Fortalezas y Debilidades)</h2>
+        
+        <div class="content-grid">
+            <!-- Columna 1: Fortalezas -->
+            <div>
+                <h3 style="color: #27ae60;">🟢 Fortalezas Clave</h3>
+                {strengths_html}
+            </div>
+            
+            <!-- Columna 2: Debilidades -->
+            <div>
+                <h3 style="color: #e74c3c;">🔴 Debilidades a Mejorar</h3>
+                {weaknesses_html}
+            </div>
+        </div>
+
+        <!-- SECCIÓN DE JUGADORES SIMILARES -->
+        <h2 class="section-title">Jugadores con Perfil Simétrico</h2>
+        {similares_html}
+        
+        <!-- FOOTER -->
+        <div class="footer">
+            <p>Reporte Generado por Coachify: Gemelo Táctico | ID de Jugador: {player_id}</p>
+            <p>© {pd.Timestamp.now().year} Coachify Analytics.</p>
+        </div>
+    </div>
+</body>
+</html>
     """
     return html
 
+"""
+    Muestra la ficha de un jugador    
+"""
 def draw_player_card(player_data, title="Ficha del Jugador"):
-    """
-    Muestra la ficha de un jugador con un diseño mejorado.
-    Utiliza la clase CSS 'player-card' para el estilo.
-    """
-    
-    # 1. Aplica el estilo base del card
-    # st.markdown(f'<div class="player-card">', unsafe_allow_html=True)
-    
     # Usamos subheader y markdown para el nombre principal y la posición
     col_data, col_img = st.columns([7, 3])
     with col_data:
@@ -416,9 +626,260 @@ def draw_player_card(player_data, title="Ficha del Jugador"):
     st.markdown("</div>", unsafe_allow_html=True)
     st.markdown("---")
 
-# utils.py (Nueva versión de draw_player_card_2)
+def to_html_table_pro(df: pd.DataFrame, title: str, css_class: str) -> str:
+    """Convierte un DataFrame a HTML con estilos específicos para el reporte."""
+    
+    # Mapeo de encabezados para tablas de fortalezas/debilidades
+    header_map = {'Métrica': 'Métrica', 'vs Prom': 'Valor (Z-Score)'}
+    
+    if 'vs Prom' in df.columns:
+        df_styled = df.rename(columns=header_map)
+    else:
+        df_styled = df
 
-# utils.py (BLOQUE DE CÓDIGO ACTUALIZADO Y COMPLETO)
+    # Aplicar estilos básicos
+    styled_html = (df_styled.style
+                   .set_table_attributes(f'class="{css_class}"')
+                   .set_table_styles([
+                       {'selector': 'th', 'props': [('background-color', '#3498db'), ('color', 'white'), ('font-size', '10px'), ('text-align', 'center'), ('padding', '8px')]},
+                       {'selector': 'td', 'props': [('font-size', '12px'), ('text-align', 'center'), ('padding', '8px')]}
+                   ])
+                   .hide(axis='index')
+                   .to_html())
+    
+    # Envuelve la tabla en un contenedor con título
+    return f"""
+    <div class="table-container">
+        <h3>{title}</h3>
+        {styled_html}
+    </div>
+    """
+
+
+def make_html_comparison_report(player_a_data: pd.Series, 
+                                player_b_data: pd.Series, 
+                                radar_fig: matplotlib.figure.Figure, 
+                                df_comparativa_abs: pd.DataFrame, 
+                                s_a: pd.DataFrame, 
+                                w_a: pd.DataFrame, 
+                                s_b: pd.DataFrame, 
+                                w_b: pd.DataFrame) -> str:
+    # 1. Convertir la figura del radar a Base64
+    buf = io.BytesIO()
+    radar_fig.savefig(buf, format='png', dpi=300, bbox_inches='tight', facecolor='white')
+    buf.seek(0)
+    img_b64 = base64.b64encode(buf.read()).decode('utf-8')
+    buf.close()
+
+    nombre_a = player_a_data.get('player.lastname', 'Jugador A')
+    nombre_b = player_b_data.get('player.lastname', 'Jugador B')
+    
+    # 2. Preparar la tabla de métricas absolutas para el HTML
+    # La tabla comparativa absoluta es el foco central.
+    abs_table_html = to_html_table_pro(
+        df_comparativa_abs, 
+        f"Métricas Absolutas - {nombre_a} vs {nombre_b}", 
+        "comparative-table"
+    )
+
+    # 3. Preparar tablas de Fortalezas/Debilidades individuales
+    strengths_a_html = to_html_table_pro(s_a, f"Fortalezas de {nombre_a}", "metric-table green-header")
+    weaknesses_a_html = to_html_table_pro(w_a, f"Debilidades de {nombre_a}", "metric-table red-header")
+    
+    strengths_b_html = to_html_table_pro(s_b, f"Fortalezas de {nombre_b}", "metric-table green-header")
+    weaknesses_b_html = to_html_table_pro(w_b, f"Debilidades de {nombre_b}", "metric-table red-header")
+
+    # 4. Estructura HTML y CSS
+    html = f"""
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>Comparación Táctica: {nombre_a} vs {nombre_b}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* Estilos Base del Reporte */
+        body {{
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+            color: #333;
+        }}
+        .report-container {{
+            max-width: 1400px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+        }}
+        
+        /* Encabezado */
+        .header {{
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #3498db;
+            margin-bottom: 30px;
+        }}
+        .header h1 {{
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin: 0;
+        }}
+        .header p {{
+            color: #7f8c8d;
+            font-size: 1.1em;
+            margin-top: 5px;
+        }}
+
+        /* Secciones de Contenido */
+        .section-title {{
+            font-size: 1.8em;
+            color: #34495e;
+            border-left: 5px solid #3498db;
+            padding-left: 15px;
+            margin-top: 35px;
+            margin-bottom: 20px;
+        }}
+        
+        /* GRID DE COMPARACIÓN */
+        .comparison-grid {{
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }}
+
+        /* Bloques de Fortalezas/Debilidades */
+        .analysis-block {{
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }}
+
+        /* Estilos de Tablas (Aplicados por Pandas to_html) */
+        .comparative-table, .metric-table {{
+            width: 100%;
+            border-collapse: collapse;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            border-radius: 6px;
+            overflow: hidden;
+            margin: 10px 0;
+        }}
+        .comparative-table tbody tr:nth-of-type(odd) {{ background-color: #f7f9fc; }}
+        .comparative-table tbody tr:nth-of-type(even) {{ background-color: #ecf0f1; }}
+
+        .metric-table.green-header th {{ background-color: #2ecc71 !important; }}
+        .metric-table.red-header th {{ background-color: #e74c3c !important; }}
+
+        /* Radar Chart */
+        .radar-section {{
+            text-align: center;
+            padding: 20px 0;
+            background: #ecf0f1;
+            border-radius: 8px;
+        }}
+        .radar-section img {{
+            max-width: 90%;
+            height: auto;
+            border: 1px solid #bdc3c7;
+            border-radius: 8px;
+        }}
+
+        /* Media Queries para Responsividad */
+        @media (max-width: 1000px) {{
+            .comparison-grid {{
+                grid-template-columns: 1fr; /* Una columna en pantallas pequeñas */
+            }}
+        }}
+        
+        /* Info de Jugadores en Bloque */
+        .player-block {{
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #ecf0f1;
+            border: 1px solid #bdc3c7;
+            text-align: center;
+            margin-bottom: 20px;
+        }}
+        .player-block h2 {{
+            color: #3498db;
+            margin: 5px 0;
+            font-size: 1.5em;
+        }}
+        .player-block p {{
+            margin: 0;
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }}
+    </style>
+</head>
+<body>
+    <div class="report-container">
+        
+        <!-- ENCABEZADO DEL REPORTE -->
+        <div class="header">
+            <h1>Confrontación Táctica: {nombre_a} vs {nombre_b}</h1>
+            <p>Análisis detallado de perfiles en la posición: {player_a_data.get('games.position', 'N/A')}</p>
+        </div>
+
+        <!-- 1. BLOQUES DE JUGADOR -->
+        <div class="comparison-grid">
+            <div class="player-block">
+                <h2>{player_a_data.get('player.firstname','')} {nombre_a}</h2>
+                <p>Equipo: {player_a_data.get('team.name','N/A')} | Liga: {player_a_data.get('league.name','N/A')}</p>
+            </div>
+            <div class="player-block">
+                <h2>{player_b_data.get('player.firstname','')} {nombre_b}</h2>
+                <p>Equipo: {player_b_data.get('team.name','N/A')} | Liga: {player_b_data.get('league.name','N/A')}</p>
+            </div>
+        </div>
+
+        <!-- 2. RADAR COMPARATIVO -->
+        <h2 class="section-title">Rendimiento Relativo (Gráfico de Radar)</h2>
+        <div class="radar-section">
+            <img src="data:image/png;base64,{img_b64}" alt="Gráfico de Radar Comparativo"/>
+            <p style="font-style: italic; font-size: 0.9em; color: #555;">El gráfico ilustra el rendimiento de ambos jugadores en métricas clave respecto al promedio de su posición (centro).</p>
+        </div>
+
+        <!-- 3. MÉTRICAS ABSOLUTAS CARA A CARA -->
+        <h2 class="section-title">Métricas Absolutas (Comparativa)</h2>
+        {abs_table_html}
+
+        <!-- 4. FORTALEZAS Y DEBILIDADES -->
+        <h2 class="section-title">Análisis de Z-Scores Individuales</h2>
+        <div class="comparison-grid">
+            
+            <!-- Análisis Jugador A -->
+            <div>
+                <h3 style="color: #2980b9;">Análisis de {nombre_a}</h3>
+                <div class="analysis-block">
+                    {strengths_a_html}
+                    {weaknesses_a_html}
+                </div>
+            </div>
+            
+            <!-- Análisis Jugador B -->
+            <div>
+                <h3 style="color: #2980b9;">Análisis de {nombre_b}</h3>
+                <div class="analysis-block">
+                    {strengths_b_html}
+                    {weaknesses_b_html}
+                </div>
+            </div>
+        </div>
+        
+        <!-- FOOTER -->
+        <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 0.8em; color: #777;">
+            <p>Reporte Generado por Coachify: Gemelo Táctico</p>
+            <p>© {pd.Timestamp.now().year} Coachify Analytics.</p>
+        </div>
+    </div>
+</body>
+</html>
+    """
+    return html
 
 def draw_player_card_2(player_data, title="Ficha del Jugador"):
     

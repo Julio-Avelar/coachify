@@ -1,15 +1,20 @@
 # Coachify.py
 import streamlit as st
 import pandas as pd
-from utils import initialize_session_state # Importamos la función de setup
-import os # Necesitas importar 'os' para manejar rutas y verificar archivos
+from utils import initialize_session_state 
+import os 
 
 st.set_page_config(layout="wide", page_title="Coachify: Análisis Táctico")
 st.markdown(
     """
     <style>
     section[data-testid="stMain"] > div[data-testid="stMainBlockContainer"] {
-        max-width: 1200px !important; /* Adjust this value as needed */
+        max-width: 1200px !important;
+    }
+    th[role="columnheader"] {
+        font-size: 14px !important;
+        font-weight: bold;
+        color: #4A90E2;
     }
     </style>
     """,
@@ -35,8 +40,8 @@ def load_css_file(css_file_name):
 # Llama a la función para cargar los estilos globales
 load_css_file("styles.css")
 
-# --- 1. CARGA DE DATOS CENTRALIZADA ---
-# Se asegura que la sesión de Streamlit tenga todos los datos cargados antes de continuar.
+# --- CARGA DE DATOS  ---
+# asegura que la sesión de Streamlit tenga todos los datos cargados antes de continuar.
 initialize_session_state()
 
 # Introducción
